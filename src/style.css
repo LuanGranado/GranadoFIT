@@ -2,11 +2,14 @@
   font-family: "DM Sans", sans-serif;
   color: #f7f6ff;
   background: #080813;
+  color-scheme: dark;
   font-synthesis: none;
   font-weight: 400;
 }
 * {
   box-sizing: border-box;
+  scrollbar-color: #504864 #171421;
+  scrollbar-width: thin;
 }
 body {
   margin: 0;
@@ -1944,4 +1947,587 @@ input:focus-visible {
   place-items: center;
   color: #9693aa;
   font-size: 12px;
+}
+
+/* Catálogos e planejamento individual */
+.day-availability {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  margin: 0 0 18px;
+}
+.day-availability div {
+  display: grid;
+  gap: 4px;
+}
+.day-availability strong {
+  font-size: 13px;
+}
+.day-availability span {
+  color: #aaa5bd;
+  font-size: 12px;
+}
+.availability-toggle {
+  width: 48px;
+  height: 27px;
+  padding: 3px;
+  border: 1px solid #57516f;
+  border-radius: 30px;
+  background: #302d40;
+  flex: none;
+}
+.availability-toggle span {
+  display: block;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: #dad5e8;
+  transition: transform 0.2s;
+}
+.availability-toggle.active {
+  background: #7760d2;
+  border-color: #a18af1;
+}
+.availability-toggle.active span {
+  transform: translateX(20px);
+  background: white;
+}
+.day-tabs button.rest-tab {
+  opacity: 0.58;
+}
+.rest-day {
+  min-height: 290px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 35px;
+  color: #aaa5bd;
+}
+.rest-day svg {
+  color: #9e88e9;
+}
+.rest-day h2 {
+  color: white;
+  margin: 12px 0 4px;
+}
+.rest-day p {
+  max-width: 360px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.workout-exercise-image {
+  width: 63px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1px solid #514b67;
+  background: #11101d;
+}
+.exercise-muscles {
+  color: #ba9dff;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.catalog-modal {
+  width: min(1180px, 100%);
+  max-height: min(94vh, 900px);
+  padding: 24px;
+  overflow: auto;
+  background: linear-gradient(135deg, #1d1b2cfa, #11111ffa);
+  box-shadow: 0 30px 100px #000a;
+}
+.catalog-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: start;
+}
+.catalog-head h2 {
+  font:
+    700 29px Outfit,
+    sans-serif;
+  margin: 7px 0 4px;
+}
+.catalog-head p,
+.catalog-detail p {
+  color: #aaa5bc;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+.catalog-head .icon-button {
+  flex: none;
+}
+.muscle-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 6px;
+  padding: 15px 0 12px;
+  scrollbar-width: thin;
+}
+.muscle-tabs button {
+  flex: none;
+  color: #bbb6ca;
+  background: #242236;
+  border: 1px solid #403c53;
+  border-radius: 30px;
+  padding: 8px 13px;
+  font-size: 12px;
+}
+.muscle-tabs button.selected {
+  color: white;
+  background: #6e54bf;
+  border-color: #a68ce8;
+}
+.catalog-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 13px;
+}
+.catalog-search {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #11111e;
+  border: 1px solid #464156;
+  border-radius: 10px;
+  padding: 0 11px;
+  color: #9993b3;
+}
+.catalog-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: white;
+  padding: 11px 0;
+  font-size: 13px;
+}
+.catalog-controls select,
+.catalog-detail select,
+.submodal select {
+  border: 1px solid #464156;
+  background: #11111e;
+  color: white;
+  border-radius: 10px;
+  padding: 10px;
+  max-width: 230px;
+}
+.catalog-controls .outline-button {
+  white-space: nowrap;
+}
+.catalog-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(330px, 0.68fr);
+  gap: 18px;
+}
+.catalog-results {
+  min-width: 0;
+}
+.result-count {
+  margin: 0 0 9px;
+  color: #948fa8;
+  font-size: 11px;
+}
+.exercise-cards {
+  max-height: 510px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  padding-right: 5px;
+}
+.exercise-choice,
+.food-choice {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid #39354c;
+  background: #242233a8;
+  border-radius: 13px;
+  padding: 8px;
+  color: white;
+}
+.exercise-choice:hover,
+.food-choice:hover,
+.exercise-choice.selected,
+.food-choice.selected {
+  border-color: #a18aeb;
+  background: #38304f;
+}
+.exercise-choice img,
+.exercise-choice-map {
+  width: 75px;
+  height: 68px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #11111d;
+}
+.exercise-choice-map {
+  display: grid;
+  place-items: center;
+}
+.exercise-choice-map .muscle-map {
+  height: 65px;
+}
+.exercise-choice span,
+.food-choice > span:nth-child(2) {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.exercise-choice strong,
+.food-choice strong {
+  font-size: 12px;
+  line-height: 1.25;
+}
+.exercise-choice small,
+.food-choice small {
+  font-size: 10px;
+  color: #a9a3bd;
+  line-height: 1.3;
+}
+.exercise-choice > svg {
+  margin-left: auto;
+  color: #b6a0ff;
+  flex: none;
+}
+.catalog-detail {
+  background: #171625;
+  border: 1px solid #383448;
+  border-radius: 16px;
+  padding: 18px;
+  min-width: 0;
+  max-height: 625px;
+  overflow: auto;
+}
+.catalog-detail h3 {
+  font:
+    700 20px Outfit,
+    sans-serif;
+  margin: 8px 0 14px;
+}
+.catalog-detail label,
+.submodal label {
+  display: grid;
+  gap: 6px;
+  color: #bbb6c8;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 0;
+}
+.catalog-detail input,
+.submodal input {
+  width: 100%;
+  padding: 10px;
+  background: #0e0e19;
+  border: 1px solid #454056;
+  color: white;
+  border-radius: 9px;
+}
+.catalog-detail .form-row,
+.submodal .form-row {
+  display: flex;
+  gap: 9px;
+  align-items: end;
+  margin: 9px 0;
+}
+.catalog-detail .form-row > label,
+.submodal .form-row > label {
+  flex: 1;
+}
+.catalog-detail .primary-button,
+.submodal .primary-button {
+  margin-top: 12px;
+  width: 100%;
+  justify-content: center;
+}
+.catalog-detail .form-row .outline-button {
+  white-space: nowrap;
+}
+.detail-visual {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 8px;
+  min-height: 208px;
+  align-items: center;
+  margin: 10px 0 16px;
+  background: #0f0e1a;
+  border-radius: 12px;
+  padding: 8px;
+}
+.detail-visual > img {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 9px;
+}
+.detail-visual > svg {
+  margin: auto;
+  color: #9885cb;
+}
+.catalog-placeholder {
+  min-height: 330px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+.catalog-placeholder svg {
+  color: #9f87e6;
+}
+.catalog-message {
+  color: #aaa5bc;
+  font-size: 13px;
+  padding: 16px;
+}
+.muscle-map {
+  display: grid;
+  justify-items: center;
+}
+.muscle-figures {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+  height: 190px;
+}
+.muscle-figures svg {
+  height: 100%;
+  width: 50%;
+}
+.muscle-base {
+  fill: #292637;
+}
+.muscle-region.idle {
+  fill: #3c384b;
+}
+.muscle-region.primary {
+  fill: #aa8aff;
+}
+.muscle-region.secondary {
+  fill: #ef9c72;
+}
+.muscle-outline {
+  fill: none;
+  stroke: #615b74;
+  stroke-width: 1.2;
+}
+.muscle-legend {
+  display: flex;
+  gap: 12px;
+  color: #aaa5b9;
+  font-size: 10px;
+}
+.muscle-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.muscle-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.legend-primary {
+  background: #aa8aff;
+}
+.legend-secondary {
+  background: #ef9c72;
+}
+.muscle-map.compact .muscle-figures {
+  height: 62px;
+}
+.food-results {
+  max-height: 530px;
+  overflow: auto;
+  display: grid;
+  gap: 7px;
+  padding-right: 5px;
+}
+.food-choice {
+  min-height: 60px;
+}
+.food-choice .food-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #493655;
+  color: #e9a0ca;
+  flex: none;
+}
+.food-choice b {
+  font-size: 11px;
+  margin-left: auto;
+  white-space: nowrap;
+  color: #dbc8ff;
+}
+.meal-editor .catalog-controls {
+  flex-wrap: wrap;
+}
+.create-food-button {
+  margin-bottom: 14px;
+}
+.selected-food {
+  background: #302a43;
+  border-radius: 11px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.selected-food p {
+  margin: 5px 0;
+}
+.portion-list {
+  margin-top: 18px;
+}
+.portion-list h3 {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.portion-list > p {
+  color: #9993a9;
+  font-size: 12px;
+}
+.portion-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #373347;
+}
+.portion-row > span {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.portion-row strong {
+  font-size: 11px;
+}
+.portion-row small {
+  font-size: 10px;
+  color: #a69fb8;
+}
+.portion-row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.portion-row input {
+  width: 66px;
+}
+.meal-totals {
+  display: grid;
+  gap: 5px;
+  margin-top: 17px;
+  padding: 14px;
+  background: #342a4b;
+  border-radius: 11px;
+}
+.meal-totals strong {
+  color: #e2d4ff;
+  font-size: 20px;
+}
+.meal-totals span {
+  color: #afa4c8;
+  font-size: 11px;
+}
+.submodal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: #05040bc9;
+  padding: 20px;
+}
+.submodal {
+  position: relative;
+  width: min(450px, 100%);
+  padding: 24px;
+  background: #201c30;
+}
+.submodal h3 {
+  font-size: 22px;
+  margin: 8px 0;
+}
+.submodal p {
+  font-size: 12px;
+  color: #aaa4b9;
+}
+@media (max-width: 850px) {
+  .catalog-modal {
+    max-height: 96vh;
+    padding: 16px;
+  }
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+  .catalog-results {
+    order: 1;
+  }
+  .catalog-detail {
+    order: 2;
+    max-height: none;
+  }
+  .exercise-cards,
+  .food-results {
+    max-height: 330px;
+  }
+  .catalog-controls {
+    flex-wrap: wrap;
+  }
+  .catalog-controls .catalog-search {
+    flex-basis: 100%;
+  }
+  .catalog-controls select {
+    max-width: none;
+    flex: 1;
+  }
+}
+@media (max-width: 500px) {
+  .modal-backdrop {
+    padding: 8px;
+  }
+  .catalog-head h2 {
+    font-size: 23px;
+  }
+  .exercise-cards {
+    grid-template-columns: 1fr;
+  }
+  .catalog-controls .outline-button {
+    width: 100%;
+    justify-content: center;
+  }
+  .detail-visual {
+    grid-template-columns: 1fr 1fr;
+  }
+  .detail-visual > img {
+    height: 160px;
+  }
+  .muscle-figures {
+    height: 150px;
+  }
+  .workout-exercise-image {
+    width: 48px;
+    height: 48px;
+  }
+}
+.meal-macros {
+  display: block;
+  color: #c9a7f9;
+  font-size: 11px;
+  margin: 8px 0;
 }

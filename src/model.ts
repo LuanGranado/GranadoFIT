@@ -1,6 +1,8 @@
 export type Exercise = {
   id: string;
   name: string;
+  catalogId?: string;
+  customId?: string;
   sets: string;
   reps: string;
   rest: string;
@@ -10,7 +12,34 @@ export type Workout = {
   title: string;
   focus: string;
   duration: number;
+  enabled: boolean;
   exercises: Exercise[];
+};
+export type CustomExercise = {
+  id: string;
+  name: string;
+  primaryMuscles: string[];
+  secondaryMuscles: string[];
+  equipment: string;
+};
+export type FoodPortion = {
+  id: string;
+  foodId: string;
+  name: string;
+  grams: number;
+  kcal100: number;
+  protein100: number;
+  carbs100: number;
+  fat100: number;
+};
+export type CustomFood = {
+  id: string;
+  name: string;
+  category: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
 };
 export type Meal = {
   id: string;
@@ -19,6 +48,7 @@ export type Meal = {
   detail: string;
   calories: number;
   done: boolean;
+  foods?: FoodPortion[];
 };
 export type WeightEntry = { date: string; weight: number };
 export type AppData = {
@@ -32,6 +62,8 @@ export type AppData = {
   };
   workouts: Workout[];
   meals: Meal[][];
+  customExercises: CustomExercise[];
+  customFoods: CustomFood[];
   cardio: { date: string; seconds: number }[];
   weights: WeightEntry[];
 };
@@ -147,10 +179,12 @@ export function createInitialData(name = "Atleta"): AppData {
         exercises: [ex("Caminhada", "1", "30 min")],
       },
       { title: "Descanso", focus: "Recuperação", duration: 0, exercises: [] },
-    ],
+    ].map((workout, index) => ({ ...workout, enabled: index !== 6 })),
     meals: days.map(() =>
       baseMeals.map((item) => ({ ...item, id: crypto.randomUUID() })),
     ),
+    customExercises: [],
+    customFoods: [],
     cardio: [],
     weights: [
       {
@@ -221,6 +255,62 @@ export function normalizeWeek(data: AppData, date = new Date()): AppData {
       day.map((meal) => ({ ...meal, done: false })),
     ),
   };
+}
+const legacyExerciseIds: Record<string, string> = {
+  "Supino reto": "Barbell_Bench_Press_-_Medium_Grip",
+  "Supino inclinado": "Incline_Dumbbell_Press",
+  "Crucifixo máquina": "Butterfly",
+  "Tríceps corda": "Triceps_Pushdown_-_Rope_Attachment",
+  "Puxada frontal": "Wide-Grip_Lat_Pulldown",
+  "Remada baixa": "Seated_Cable_Rows",
+  "Rosca direta": "Barbell_Curl",
+  "Agachamento livre": "Barbell_Squat",
+  "Leg press": "Leg_Press",
+  "Mesa flexora": "Lying_Leg_Curls",
+  Panturrilha: "Standing_Calf_Raises",
+  Prancha: "Plank",
+  "Abdominal infra": "Hanging_Leg_Raise",
+  Desenvolvimento: "Dumbbell_Shoulder_Press",
+  "Elevação lateral": "Side_Lateral_Raise",
+  "Rosca martelo": "Hammer_Curls",
+  "Tríceps testa": "Lying_Triceps_Press",
+  Caminhada: "Walking_Treadmill",
+};
+export function migrateData(data: AppData): AppData {
+  return {
+    ...data,
+    workouts: data.workouts.map((workout, index) => ({
+      ...workout,
+      enabled: workout.enabled ?? index !== 6,
+      exercises: workout.exercises.map((exercise) => ({
+        ...exercise,
+        catalogId: exercise.catalogId ?? legacyExerciseIds[exercise.name],
+      })),
+    })),
+    customExercises: Array.isArray(data.customExercises)
+      ? data.customExercises
+      : [],
+    customFoods: Array.isArray(data.customFoods) ? data.customFoods : [],
+  };
+}
+export function sumFoodPortions(portions: FoodPortion[]) {
+  const total = portions.reduce(
+    (sum, item) => {
+      const factor = item.grams / 100;
+      sum.kcal += item.kcal100 * factor;
+      sum.protein += item.protein100 * factor;
+      sum.carbs += item.carbs100 * factor;
+      sum.fat += item.fat100 * factor;
+      return sum;
+    },
+    { kcal: 0, protein: 0, carbs: 0, fat: 0 },
+  );
+  return Object.fromEntries(
+    Object.entries(total).map(([key, value]) => [
+      key,
+      Math.round(value * 10) / 10,
+    ]),
+  ) as typeof total;
 }
 export const formatTime = (seconds: number) =>
   `${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor((seconds % 3600) / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;

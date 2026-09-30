@@ -20,3 +20,13 @@
 - A demonstração informa que seus dados ficam neste navegador; contas reais começam sem medidas, refeições ou treinos inventados.
 - Nenhum segredo foi encontrado nos arquivos de código/configuração examinados. `npm audit` retornou zero vulnerabilidades.
 - As políticas RLS e o fluxo de autenticação ainda precisam de uma prova ponta a ponta em um projeto Supabase configurado antes de publicação com contas reais.
+
+## Ampliação de catálogos — 30/09/2026
+
+- Adição de exercícios por catálogo visual com abas musculares, filtro por equipamento, foto do movimento, mapa muscular, séries, repetições/tempo e descanso. O catálogo inclui peso corporal e pesos livres. Movimentos pessoais ficam no estado da conta, fora da biblioteca compartilhada.
+- Dias sem treino podem ser desativados e reativados sem perder a ficha; o painel e os totais da semana consideram somente dias ativos.
+- Refeições agora aceitam alimentos do catálogo, porções em gramas e cálculo de energia e macronutrientes. Alimentos pessoais são guardados no estado da conta.
+- Catálogo importado: 876 exercícios, 873 fotos locais e 7.793 alimentos com nutrientes completos. Dados anteriores recebem migração ao carregar; exemplos antigos permanecem editáveis.
+- Build TypeScript, 9 testes, consulta e edição no navegador, criação de exercício e alimento pessoal, alternância de dia e persistência após recarga verificados. Revisão visual do seletor em 1440 × 900 e 390 × 844.
+- A base USDA é de referência, predominantemente em inglês e não representa todas as preparações brasileiras. O mapa muscular é um esquema visual baseado na classificação da fonte. Valores nutricionais e músculos recrutados variam com preparo, técnica e indivíduo.
+- Não há projeto Supabase conectado: isolamento entre duas contas reais, RLS e sincronização remota continuam sem validação ponta a ponta. O estado de demonstração é local ao navegador.

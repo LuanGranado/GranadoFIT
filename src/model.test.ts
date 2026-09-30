@@ -6,6 +6,8 @@ import {
   createInitialData,
   formatTime,
   normalizeWeek,
+  migrateData,
+  sumFoodPortions,
   weekDayIndex,
   weekStartKey,
 } from "./model";
@@ -42,5 +44,34 @@ describe("indicadores e tempo", () => {
     expect(state.workouts.every((day) => day.exercises.length === 0)).toBe(
       true,
     );
+  });
+  it("preserva fichas antigas e habilita os dias já usados", () => {
+    const state = createInitialData();
+    const old = structuredClone(state) as unknown as Record<string, unknown>;
+    delete old.customExercises;
+    delete old.customFoods;
+    (old.workouts as Record<string, unknown>[]).forEach(
+      (workout) => delete workout.enabled,
+    );
+    const next = migrateData(old as unknown as typeof state);
+    expect(next.workouts[0].enabled).toBe(true);
+    expect(next.workouts[6].enabled).toBe(false);
+    expect(next.customExercises).toEqual([]);
+    expect(next.workouts[0].exercises[0].catalogId).toBeTruthy();
+  });
+  it("calcula nutrientes por quantidade em gramas", () => {
+    const total = sumFoodPortions([
+      {
+        id: "1",
+        foodId: "arroz",
+        name: "Arroz",
+        grams: 150,
+        kcal100: 130,
+        protein100: 2.7,
+        carbs100: 28,
+        fat100: 0.3,
+      },
+    ]);
+    expect(total).toEqual({ kcal: 195, protein: 4.1, carbs: 42, fat: 0.5 });
   });
 });

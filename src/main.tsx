@@ -39,10 +39,15 @@ import {
   days,
   formatTime,
   normalizeWeek,
+  migrateData,
+  sumFoodPortions,
   type AppData,
   weekDayIndex,
 } from "./model";
 import "./style.css";
+import { loadExercises, muscleNames, type CatalogExercise } from "./catalog";
+import ExercisePicker from "./ExercisePicker";
+import MealEditor from "./MealEditor";
 
 const ProgressChart = React.lazy(() => import("./ProgressChart"));
 
@@ -54,7 +59,7 @@ const supabase: SupabaseClient | null =
 type Page =
   "overview" | "workouts" | "nutrition" | "cardio" | "progress" | "profile";
 type Editor = {
-  kind: "exercise" | "meal" | "workout";
+  kind: "exercise" | "meal" | "workout" | "exercise-picker";
   day: number;
   id?: string;
 };
@@ -72,7 +77,7 @@ const safeRead = (): AppData => {
   try {
     const raw = localStorage.getItem(localKey);
     return raw
-      ? normalizeWeek(JSON.parse(raw) as AppData)
+      ? normalizeWeek(migrateData(JSON.parse(raw) as AppData))
       : createInitialData();
   } catch {
     return createInitialData();
@@ -87,6 +92,7 @@ function App() {
   const [selectedDay, setSelectedDay] = useState(today);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
+  const [exerciseCatalog, setExerciseCatalog] = useState<CatalogExercise[]>([]);
   const [toast, setToast] = useState("");
   const [authNotice, setAuthNotice] = useState("");
   const [loading, setLoading] = useState(!!supabase);
@@ -207,7 +213,7 @@ function App() {
     const newAccount = !row?.data || !Object.keys(row.data).length;
     const next = newAccount
       ? createBlankData(name || "Atleta")
-      : normalizeWeek(row.data as AppData);
+      : normalizeWeek(migrateData(row.data as AppData));
     setData(next);
     setUserId(id);
     setMode("auth");
@@ -250,6 +256,10 @@ function App() {
   }
   function navigate(next: Page) {
     setPage(next);
+    if (next === "workouts")
+      void loadExercises()
+        .then(setExerciseCatalog)
+        .catch(() => {});
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -326,18 +336,21 @@ function App() {
   const currentWorkout = data.workouts[selectedDay];
   const currentMeals = data.meals[selectedDay];
   const totalExercises = data.workouts.reduce(
-    (sum, workout) => sum + workout.exercises.length,
+    (sum, workout) => sum + (workout.enabled ? workout.exercises.length : 0),
     0,
   );
   const doneExercises = data.workouts.reduce(
     (sum, workout) =>
-      sum + workout.exercises.filter((item) => item.done).length,
+      sum +
+      (workout.enabled
+        ? workout.exercises.filter((item) => item.done).length
+        : 0),
     0,
   );
   const currentBmi = bmi(data.profile.weight, data.profile.height);
-  const completedToday = data.workouts[today].exercises.filter(
-    (item) => item.done,
-  ).length;
+  const completedToday = data.workouts[today].enabled
+    ? data.workouts[today].exercises.filter((item) => item.done).length
+    : 0;
   const displayName = data.profile.name.trim().split(" ")[0] || "Atleta";
 
   return (
@@ -483,12 +496,20 @@ function App() {
                   <div className="hero-label">
                     <span className="hero-label-dot" /> SEU FOCO DE HOJE
                   </div>
-                  <h2>{data.workouts[today].title}</h2>
+                  <h2>
+                    {data.workouts[today].enabled
+                      ? data.workouts[today].title
+                      : "Dia de descanso"}
+                  </h2>
                   <p>
-                    {data.workouts[today].focus} <span>·</span>{" "}
-                    {data.workouts[today].duration
+                    {data.workouts[today].enabled
+                      ? data.workouts[today].focus
+                      : "Recupere as energias"}{" "}
+                    <span>·</span>{" "}
+                    {data.workouts[today].enabled &&
+                    data.workouts[today].duration
                       ? `${data.workouts[today].duration} min estimados`
-                      : "Dia de recuperar"}
+                      : "Sem treino planejado"}
                   </p>
                   <div className="hero-footer">
                     <button
@@ -500,8 +521,9 @@ function App() {
                       Abrir treino de hoje <ArrowRight size={17} />
                     </button>
                     <span>
-                      {completedToday}/{data.workouts[today].exercises.length}{" "}
-                      exercícios feitos
+                      {data.workouts[today].enabled
+                        ? `${completedToday}/${data.workouts[today].exercises.length} exercícios feitos`
+                        : "Dia livre na sua ficha"}
                     </span>
                   </div>
                 </div>
@@ -569,34 +591,43 @@ function App() {
                     </button>
                   </div>
                   <div className="week-list">
-                    {data.workouts.map((workout, index) => (
-                      <button
-                        key={days[index]}
-                        className={`week-row ${index === today ? "is-today" : ""}`}
-                        onClick={() => {
-                          setSelectedDay(index);
-                          navigate("workouts");
-                        }}
-                      >
-                        <span className="week-day">
-                          {days[index].slice(0, 3).toUpperCase()}
-                        </span>
-                        <span className="week-row-main">
-                          <strong>{workout.title}</strong>
-                          <small>{workout.focus}</small>
-                        </span>
-                        <span className="week-row-end">
-                          {index === today ? (
-                            <span className="today-pill">HOJE</span>
-                          ) : workout.duration ? (
-                            `${workout.duration} min`
-                          ) : (
-                            "—"
-                          )}
-                          <ChevronRight size={16} />
-                        </span>
-                      </button>
-                    ))}
+                    {!data.workouts.some((workout) => workout.enabled) && (
+                      <p className="catalog-message">
+                        Nenhum dia de treino ativo. Abra sua ficha para escolher
+                        os dias da semana.
+                      </p>
+                    )}
+                    {data.workouts.map(
+                      (workout, index) =>
+                        workout.enabled && (
+                          <button
+                            key={days[index]}
+                            className={`week-row ${index === today ? "is-today" : ""}`}
+                            onClick={() => {
+                              setSelectedDay(index);
+                              navigate("workouts");
+                            }}
+                          >
+                            <span className="week-day">
+                              {days[index].slice(0, 3).toUpperCase()}
+                            </span>
+                            <span className="week-row-main">
+                              <strong>{workout.title}</strong>
+                              <small>{workout.focus}</small>
+                            </span>
+                            <span className="week-row-end">
+                              {index === today ? (
+                                <span className="today-pill">HOJE</span>
+                              ) : workout.duration ? (
+                                `${workout.duration} min`
+                              ) : (
+                                "—"
+                              )}
+                              <ChevronRight size={16} />
+                            </span>
+                          </button>
+                        ),
+                    )}
                   </div>
                 </section>
                 <section className="glass-card nutrition-preview">
@@ -660,161 +691,231 @@ function App() {
                 title="Meus treinos"
                 description="Sua ficha de treino para cada dia da semana. Ajuste ao seu ritmo."
               />
-              <DayTabs selected={selectedDay} onSelect={setSelectedDay} />
-              <div className="detail-grid">
-                <section className="glass-card detail-main">
-                  <div className="detail-heading">
-                    <div className="detail-icon purple">
-                      <Dumbbell size={24} />
-                    </div>
-                    <div>
-                      <span className="mini-eyebrow">
-                        {days[selectedDay].toUpperCase()} ·{" "}
-                        {currentWorkout.focus.toUpperCase()}
-                      </span>
-                      <h2>{currentWorkout.title}</h2>
-                      <p>
-                        {currentWorkout.exercises.length} exercícios ·{" "}
-                        {currentWorkout.duration} min estimados
-                      </p>
-                    </div>
-                  </div>
-                  <div className="exercise-list">
-                    {currentWorkout.exercises.length ? (
-                      currentWorkout.exercises.map((item, index) => (
-                        <div
-                          className={`exercise-item ${item.done ? "done" : ""}`}
-                          key={item.id}
-                        >
-                          <button
-                            className="check-button"
-                            onClick={() =>
-                              update((d) => {
-                                const target = d.workouts[
-                                  selectedDay
-                                ].exercises.find(
-                                  (exercise) => exercise.id === item.id,
-                                )!;
-                                target.done = !target.done;
-                                return d;
-                              })
-                            }
-                            aria-label={`${item.done ? "Desmarcar" : "Concluir"} ${item.name}`}
-                          >
-                            {item.done && <Check size={16} />}
-                          </button>
-                          <span className="exercise-number">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                          <div className="exercise-main">
-                            <strong>{item.name}</strong>
-                            <span>
-                              {item.sets} séries · {item.reps} repetições ·
-                              descanso {item.rest}
-                            </span>
-                          </div>
-                          <button
-                            className="icon-button muted"
-                            aria-label={`Editar ${item.name}`}
-                            onClick={() =>
-                              setEditor({
-                                kind: "exercise",
-                                day: selectedDay,
-                                id: item.id,
-                              })
-                            }
-                          >
-                            <Settings2 size={17} />
-                          </button>
-                          <button
-                            className="icon-button muted"
-                            aria-label={`Excluir ${item.name}`}
-                            onClick={() =>
-                              update((d) => {
-                                d.workouts[selectedDay].exercises = d.workouts[
-                                  selectedDay
-                                ].exercises.filter(
-                                  (exercise) => exercise.id !== item.id,
-                                );
-                                return d;
-                              })
-                            }
-                          >
-                            <X size={17} />
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="empty-state">
-                        <Dumbbell size={27} />
-                        <strong>Dia livre</strong>
+              <DayTabs
+                selected={selectedDay}
+                onSelect={setSelectedDay}
+                enabled={data.workouts.map((workout) => workout.enabled)}
+              />
+              <div className="day-availability glass-card">
+                <div>
+                  <strong>Treino na {days[selectedDay].toLowerCase()}</strong>
+                  <span>
+                    {currentWorkout.enabled
+                      ? "Dia ativo na sua ficha semanal"
+                      : "Dia removido da sua rotina de treinos"}
+                  </span>
+                </div>
+                <button
+                  className={`availability-toggle ${currentWorkout.enabled ? "active" : ""}`}
+                  aria-label={`${currentWorkout.enabled ? "Desativar" : "Ativar"} treino de ${days[selectedDay]}`}
+                  aria-pressed={currentWorkout.enabled}
+                  onClick={() =>
+                    update((d) => {
+                      d.workouts[selectedDay].enabled =
+                        !d.workouts[selectedDay].enabled;
+                      return d;
+                    })
+                  }
+                >
+                  <span />
+                </button>
+              </div>
+              {currentWorkout.enabled ? (
+                <div className="detail-grid">
+                  <section className="glass-card detail-main">
+                    <div className="detail-heading">
+                      <div className="detail-icon purple">
+                        <Dumbbell size={24} />
+                      </div>
+                      <div>
+                        <span className="mini-eyebrow">
+                          {days[selectedDay].toUpperCase()} ·{" "}
+                          {currentWorkout.focus.toUpperCase()}
+                        </span>
+                        <h2>{currentWorkout.title}</h2>
                         <p>
-                          Use este espaço para descansar ou adicione um
-                          exercício.
+                          {currentWorkout.exercises.length} exercícios ·{" "}
+                          {currentWorkout.duration} min estimados
                         </p>
                       </div>
-                    )}
-                  </div>
-                  <button
-                    className="add-button"
-                    onClick={() =>
-                      setEditor({ kind: "exercise", day: selectedDay })
-                    }
-                  >
-                    <Plus size={18} /> Adicionar exercício
-                  </button>
-                </section>
-                <aside className="detail-side">
-                  <div className="glass-card progress-side">
-                    <div className="side-card-icon">
-                      <Target size={21} />
                     </div>
-                    <h3>Progresso do dia</h3>
-                    <div className="big-percent">
-                      {currentWorkout.exercises.length
-                        ? Math.round(
-                            (currentWorkout.exercises.filter(
-                              (item) => item.done,
-                            ).length /
-                              currentWorkout.exercises.length) *
-                              100,
-                          )
-                        : 0}
-                      <span>%</span>
+                    <div className="exercise-list">
+                      {currentWorkout.exercises.length ? (
+                        currentWorkout.exercises.map((item, index) => (
+                          <div
+                            className={`exercise-item ${item.done ? "done" : ""}`}
+                            key={item.id}
+                          >
+                            <button
+                              className="check-button"
+                              onClick={() =>
+                                update((d) => {
+                                  const target = d.workouts[
+                                    selectedDay
+                                  ].exercises.find(
+                                    (exercise) => exercise.id === item.id,
+                                  )!;
+                                  target.done = !target.done;
+                                  return d;
+                                })
+                              }
+                              aria-label={`${item.done ? "Desmarcar" : "Concluir"} ${item.name}`}
+                            >
+                              {item.done && <Check size={16} />}
+                            </button>
+                            <span className="exercise-number">
+                              {String(index + 1).padStart(2, "0")}
+                            </span>
+                            {(() => {
+                              const entry = exerciseCatalog.find(
+                                (catalogItem) =>
+                                  catalogItem.id === item.catalogId,
+                              );
+                              return entry?.image ? (
+                                <img
+                                  className="workout-exercise-image"
+                                  src={entry.image}
+                                  alt={`Execução de ${item.name}`}
+                                  loading="lazy"
+                                />
+                              ) : null;
+                            })()}
+                            <div className="exercise-main">
+                              <strong>{item.name}</strong>
+                              <span>
+                                {item.sets} séries · {item.reps} repetições ·
+                                descanso {item.rest}
+                              </span>
+                              {(() => {
+                                const entry =
+                                  exerciseCatalog.find(
+                                    (catalogItem) =>
+                                      catalogItem.id === item.catalogId,
+                                  ) ||
+                                  data.customExercises.find(
+                                    (custom) => custom.id === item.customId,
+                                  );
+                                return entry ? (
+                                  <small className="exercise-muscles">
+                                    {entry.primaryMuscles
+                                      .map((part) => muscleNames[part] || part)
+                                      .join(", ")}
+                                  </small>
+                                ) : null;
+                              })()}
+                            </div>
+                            <button
+                              className="icon-button muted"
+                              aria-label={`Editar ${item.name}`}
+                              onClick={() =>
+                                setEditor({
+                                  kind: "exercise",
+                                  day: selectedDay,
+                                  id: item.id,
+                                })
+                              }
+                            >
+                              <Settings2 size={17} />
+                            </button>
+                            <button
+                              className="icon-button muted"
+                              aria-label={`Excluir ${item.name}`}
+                              onClick={() =>
+                                update((d) => {
+                                  d.workouts[selectedDay].exercises =
+                                    d.workouts[selectedDay].exercises.filter(
+                                      (exercise) => exercise.id !== item.id,
+                                    );
+                                  return d;
+                                })
+                              }
+                            >
+                              <X size={17} />
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="empty-state">
+                          <Dumbbell size={27} />
+                          <strong>Dia livre</strong>
+                          <p>
+                            Use este espaço para descansar ou adicione um
+                            exercício.
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <div className="progress-bar">
-                      <span
-                        style={{
-                          width: `${currentWorkout.exercises.length ? (currentWorkout.exercises.filter((item) => item.done).length / currentWorkout.exercises.length) * 100 : 0}%`,
-                        }}
-                      />
-                    </div>
-                    <p>
-                      {
-                        currentWorkout.exercises.filter((item) => item.done)
-                          .length
-                      }{" "}
-                      de {currentWorkout.exercises.length} exercícios concluídos
-                    </p>
-                  </div>
-                  <div className="glass-card tip-card">
-                    <span className="mini-eyebrow">DO SEU JEITO</span>
-                    <h3>Personalize sua ficha</h3>
-                    <p>
-                      Edite o nome do treino, duração e exercícios para refletir
-                      seu planejamento real.
-                    </p>
                     <button
-                      className="text-button"
+                      className="add-button"
                       onClick={() =>
-                        setEditor({ kind: "workout", day: selectedDay })
+                        setEditor({ kind: "exercise-picker", day: selectedDay })
                       }
                     >
-                      Editar treino <ArrowRight size={16} />
+                      <Plus size={18} /> Adicionar exercício
                     </button>
-                  </div>
-                </aside>
-              </div>
+                  </section>
+                  <aside className="detail-side">
+                    <div className="glass-card progress-side">
+                      <div className="side-card-icon">
+                        <Target size={21} />
+                      </div>
+                      <h3>Progresso do dia</h3>
+                      <div className="big-percent">
+                        {currentWorkout.exercises.length
+                          ? Math.round(
+                              (currentWorkout.exercises.filter(
+                                (item) => item.done,
+                              ).length /
+                                currentWorkout.exercises.length) *
+                                100,
+                            )
+                          : 0}
+                        <span>%</span>
+                      </div>
+                      <div className="progress-bar">
+                        <span
+                          style={{
+                            width: `${currentWorkout.exercises.length ? (currentWorkout.exercises.filter((item) => item.done).length / currentWorkout.exercises.length) * 100 : 0}%`,
+                          }}
+                        />
+                      </div>
+                      <p>
+                        {
+                          currentWorkout.exercises.filter((item) => item.done)
+                            .length
+                        }{" "}
+                        de {currentWorkout.exercises.length} exercícios
+                        concluídos
+                      </p>
+                    </div>
+                    <div className="glass-card tip-card">
+                      <span className="mini-eyebrow">DO SEU JEITO</span>
+                      <h3>Personalize sua ficha</h3>
+                      <p>
+                        Edite o nome do treino, duração e exercícios para
+                        refletir seu planejamento real.
+                      </p>
+                      <button
+                        className="text-button"
+                        onClick={() =>
+                          setEditor({ kind: "workout", day: selectedDay })
+                        }
+                      >
+                        Editar treino <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </aside>
+                </div>
+              ) : (
+                <div className="glass-card rest-day">
+                  <Dumbbell size={32} />
+                  <h2>Dia livre</h2>
+                  <p>
+                    Esse dia não aparece no seu planejamento de treino. Ative o
+                    botão acima quando quiser treinar aqui.
+                  </p>
+                </div>
+              )}
             </>
           )}
           {page === "nutrition" && (
@@ -861,6 +962,14 @@ function App() {
                         <h3>{item.name}</h3>
                       </div>
                       <p>{item.detail}</p>
+                      {!!item.foods?.length && (
+                        <small className="meal-macros">
+                          {(() => {
+                            const total = sumFoodPortions(item.foods);
+                            return `P ${total.protein} g · C ${total.carbs} g · G ${total.fat} g`;
+                          })()}
+                        </small>
+                      )}
                       <span className="calorie-chip">{item.calories} kcal</span>
                     </div>
                     <div className="meal-card-actions">
@@ -922,9 +1031,9 @@ function App() {
                 <Plus size={18} /> Adicionar refeição
               </button>
               <p className="health-note">
-                Informações nutricionais são estimativas inseridas por você.
-                Para um plano alimentar individualizado, procure um
-                nutricionista.
+                Valores nutricionais de referência por 100 g; quantidades e
+                preparo podem alterar os totais. Para um plano alimentar
+                individualizado, procure um nutricionista.
               </p>
             </>
           )}
@@ -960,15 +1069,47 @@ function App() {
           </button>
         </div>
       )}
-      {editor && (
-        <EditorModal
-          key={`${editor.kind}-${editor.day}-${editor.id || "new"}`}
-          editor={editor}
-          data={data}
-          update={update}
-          onClose={() => setEditor(null)}
-        />
-      )}
+      {editor &&
+        (editor.kind === "exercise-picker" ? (
+          <ExercisePicker
+            custom={data.customExercises}
+            onClose={() => setEditor(null)}
+            onSave={(exercise, custom) => {
+              update((d) => {
+                if (custom) d.customExercises.push(custom);
+                d.workouts[editor.day].exercises.push(exercise);
+                return d;
+              });
+              setEditor(null);
+            }}
+          />
+        ) : editor.kind === "meal" ? (
+          <MealEditor
+            meal={data.meals[editor.day].find((item) => item.id === editor.id)}
+            custom={data.customFoods}
+            onClose={() => setEditor(null)}
+            onSave={(meal, created) => {
+              update((d) => {
+                d.customFoods.push(...created);
+                const index = d.meals[editor.day].findIndex(
+                  (item) => item.id === meal.id,
+                );
+                if (index >= 0) d.meals[editor.day][index] = meal;
+                else d.meals[editor.day].push(meal);
+                return d;
+              });
+              setEditor(null);
+            }}
+          />
+        ) : (
+          <EditorModal
+            key={`${editor.kind}-${editor.day}-${editor.id || "new"}`}
+            editor={editor}
+            data={data}
+            update={update}
+            onClose={() => setEditor(null)}
+          />
+        ))}
     </div>
   );
 }
@@ -1109,6 +1250,10 @@ function EditorModal({
               autoFocus
               required
               maxLength={80}
+              readOnly={
+                editor.kind === "exercise" &&
+                !!(exercise?.catalogId || exercise?.customId)
+              }
               value={form.name}
               onChange={(event) => field("name", event.target.value)}
               placeholder={`Nome do ${label}`}
@@ -1487,9 +1632,11 @@ function PageTitle({
 function DayTabs({
   selected,
   onSelect,
+  enabled,
 }: {
   selected: number;
   onSelect: (day: number) => void;
+  enabled?: boolean[];
 }) {
   return (
     <div className="day-tabs" role="tablist" aria-label="Dias da semana">
@@ -1497,12 +1644,18 @@ function DayTabs({
         <button
           role="tab"
           aria-selected={selected === index}
-          className={selected === index ? "selected" : ""}
+          className={`${selected === index ? "selected" : ""} ${enabled && !enabled[index] ? "rest-tab" : ""}`}
           key={day}
           onClick={() => onSelect(index)}
         >
           {day}
-          <span>{index === today ? "HOJE" : ""}</span>
+          <span>
+            {enabled && !enabled[index]
+              ? "FOLGA"
+              : index === today
+                ? "HOJE"
+                : ""}
+          </span>
         </button>
       ))}
     </div>

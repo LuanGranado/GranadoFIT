@@ -37,3 +37,30 @@ Site responsivo com painel pessoal, planos semanais editáveis, registro de trei
 
 ## Nota
 Não havia repositório nem issue tracker configurado ao início; esta especificação é local e pode ser migrada para o rastreador escolhido depois.
+
+## Ampliação — catálogo e personalização (30/09/2026)
+
+### Problema
+Digitar o nome de cada exercício ou alimento torna a ficha lenta de montar. Também falta uma referência visual para o movimento e os músculos trabalhados, e a semana precisa refletir apenas os dias em que a pessoa treina.
+
+### Histórias de usuário
+14. Como usuário, quero navegar por abas de músculos e buscar exercícios, para montar a ficha rapidamente.
+15. Como usuário, quero ver uma foto do movimento e um mapa dos músculos principais e secundários antes de escolher.
+16. Como usuário, quero escolher um exercício e então ajustar séries, repetições e descanso.
+17. Como usuário, quero encontrar exercícios com peso corporal, pesos livres, cabos e máquinas.
+18. Como usuário, quero criar um exercício privado com grupo muscular e equipamento quando o catálogo não atender.
+19. Como usuário, quero desativar dias sem treino sem perder a ficha caso eu volte a usá-los.
+20. Como usuário, quero buscar alimentos com valores por 100 g e informar a porção usada na refeição.
+21. Como usuário, quero criar um alimento privado com valores próprios por 100 g.
+22. Como usuário, quero manter minhas refeições anteriores ao atualizar o app.
+
+### Decisões
+- Catálogo público de exercícios local e versionado a partir do Free Exercise DB, com fotos locais e atribuição da fonte. Traduções selecionadas facilitam o uso em português; os demais nomes originais são mantidos.
+- Mapa corporal próprio destaca músculos principais e secundários, distinto da foto do movimento.
+- Catálogo público de alimentos local e versionado a partir do USDA FoodData Central SR Legacy; valores por 100 g. Itens frequentes recebem nomes em português e o restante preserva a descrição de origem.
+- Itens personalizados são armazenados somente no documento da pessoa. Desativar um dia preserva seus exercícios.
+- Refeições antigas com texto e calorias manuais continuam legíveis; novas refeições podem conter alimentos e porções calculadas.
+
+### Teste
+- Verificar busca, filtro muscular, cálculo de porção, migração de dados e dias desativados em testes de lógica.
+- Testar com Playwright a seleção visual, criação de itens privados, edição de refeições e alternância de dias em desktop e celular.
