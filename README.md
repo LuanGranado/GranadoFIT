@@ -32,6 +32,7 @@ npm audit
 ```
 
 Prévia visual: [`docs/previews`](docs/previews). Especificação: [`docs/spec.md`](docs/spec.md).
+Revisão técnica e de segurança: [`docs/review.md`](docs/review.md).
 
 ## Limite atual
 
