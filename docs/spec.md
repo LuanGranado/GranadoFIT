@@ -45,6 +45,15 @@ Site responsivo com painel pessoal, planos semanais editáveis, registro de trei
 
 Não havia repositório nem issue tracker configurado ao início; esta especificação é local e pode ser migrada para o rastreador escolhido depois.
 
+## Cadastro e salvamento em conta (30/09/2026)
+
+- A pessoa cria uma conta com nome, e-mail e senha e entra com a mesma conta em visitas futuras.
+- Perfil, treinos, refeições, cardio, peso e itens próprios persistem no Supabase e reaparecem após fechar o navegador ou acessar outro dispositivo.
+- Cada conta lê e altera somente seu próprio documento, identificado pelo ID autenticado; visitantes não têm acesso a esses documentos.
+- Alterações ainda não confirmadas na nuvem ficam pendentes no navegador daquela conta e são reenviadas na próxima abertura. A interface informa salvamento, sucesso ou falha.
+- A demonstração continua separada e local ao navegador. Contas novas começam vazias, sem copiar exemplos da demonstração.
+- Por escolha atual de Luan, o cadastro não exige confirmação de e-mail. Edição simultânea em dois dispositivos, recuperação de senha e envio de e-mails transacionais ficam para uma etapa com resolução de conflitos e SMTP.
+
 ## Ampliação — catálogo e personalização (30/09/2026)
 
 ### Problema

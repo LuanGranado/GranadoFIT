@@ -56,6 +56,11 @@ import ExercisePicker from "./ExercisePicker";
 import ExerciseDetailModal from "./ExerciseDetailModal";
 import AccessibilityWidget from "./AccessibilityWidget";
 import MealEditor from "./MealEditor";
+import {
+  clearPendingState,
+  readPendingState,
+  writePendingState,
+} from "./pendingState";
 
 const ProgressChart = React.lazy(() => import("./ProgressChart"));
 
@@ -117,12 +122,16 @@ function App() {
   }, [exerciseCatalog]);
   const [toast, setToast] = useState("");
   const [authNotice, setAuthNotice] = useState("");
+  const [syncStatus, setSyncStatus] = useState<"saving" | "saved" | "error">(
+    "saved",
+  );
   const [loading, setLoading] = useState(!!supabase);
   const [cardioElapsed, setCardioElapsed] = useState(0);
   const [cardioStartedAt, setCardioStartedAt] = useState<number | null>(null);
   const [clockNow, setClockNow] = useState(Date.now());
   const ready = useRef(false);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const saveVersion = useRef(0);
 
   useEffect(() => {
     if (cardioStartedAt === null) return;
@@ -195,26 +204,13 @@ function App() {
       .finally(() => {
         if (live) setLoading(false);
       });
-    const { data: listener } = client.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_OUT") {
-          ready.current = false;
-          setUserId(null);
-          setMode("guest");
-        }
-        if (event === "SIGNED_IN" && session?.user && !ready.current)
-          window.setTimeout(() => {
-            void loadUser(
-              session.user.id,
-              session.user.user_metadata?.name as string | undefined,
-            ).catch(() =>
-              setAuthNotice(
-                "Não foi possível carregar a conta. Verifique a configuração do Supabase.",
-              ),
-            );
-          }, 0);
-      },
-    );
+    const { data: listener } = client.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        ready.current = false;
+        setUserId(null);
+        setMode("guest");
+      }
+    });
     return () => {
       live = false;
       listener.subscription.unsubscribe();
@@ -232,16 +228,19 @@ function App() {
       throw new Error(
         "Não foi possível carregar seus dados. Confira se o schema foi aplicado no Supabase.",
       );
-    const newAccount = !row?.data || !Object.keys(row.data).length;
+    const pending = readPendingState(id);
+    const newAccount =
+      !pending && (!row?.data || !Object.keys(row.data).length);
     const next = newAccount
       ? createBlankData(name || "Atleta")
-      : normalizeWeek(migrateData(row.data as AppData));
+      : normalizeWeek(migrateData((pending?.data || row?.data) as AppData));
     setData(next);
     setUserId(id);
     setMode("auth");
     setAuthNotice("");
     if (newAccount) setPage("profile");
     ready.current = true;
+    setSyncStatus(pending ? "saving" : "saved");
   }
 
   useEffect(() => {
@@ -250,6 +249,14 @@ function App() {
       const client = supabase;
       const snapshot = data;
       const id = userId;
+      const version = ++saveVersion.current;
+      let revision = "";
+      try {
+        revision = writePendingState(id, snapshot);
+      } catch {
+        // A nuvem continua sendo usada quando o navegador não aceita cópia local.
+      }
+      setSyncStatus("saving");
       saveQueue.current = saveQueue.current
         .catch(() => {})
         .then(async () => {
@@ -262,10 +269,12 @@ function App() {
             { onConflict: "user_id" },
           );
           if (error) throw error;
+          if (revision) clearPendingState(id, revision);
+          if (version === saveVersion.current) setSyncStatus("saved");
         });
-      void saveQueue.current.catch(() =>
-        showToast("Não foi possível salvar. Tente novamente."),
-      );
+      void saveQueue.current.catch(() => {
+        if (version === saveVersion.current) setSyncStatus("error");
+      });
     }
   }, [data, mode, userId]);
 
@@ -300,10 +309,17 @@ function App() {
           { onConflict: "user_id" },
         );
       if (error) {
+        setSyncStatus("error");
         showToast("Não foi possível salvar. Tente novamente antes de sair.");
         return;
       }
-      await supabase.auth.signOut();
+      const pending = readPendingState(userId);
+      if (pending) clearPendingState(userId, pending.revision);
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        showToast("Não foi possível sair da conta. Tente novamente.");
+        return;
+      }
     }
     setMode("guest");
     setUserId(null);
@@ -334,7 +350,10 @@ function App() {
             const { data: result, error } = await supabase.auth.signUp({
               email,
               password,
-              options: { data: { name } },
+              options: {
+                data: { name: name.trim() },
+                emailRedirectTo: window.location.origin,
+              },
             });
             if (error) throw error;
             if (!result.session)
@@ -491,6 +510,15 @@ function App() {
               <button onClick={signOut}>
                 Sair da demonstração <ArrowRight size={14} />
               </button>
+            </div>
+          )}
+          {mode === "auth" && (
+            <div className="demo-banner" role="status" aria-live="polite">
+              {syncStatus === "saving"
+                ? "Salvando seus dados na nuvem..."
+                : syncStatus === "error"
+                  ? "Falha ao salvar na nuvem. As alterações deste navegador serão reenviadas quando você abrir o app."
+                  : "Dados salvos na sua conta. Você pode continuar em outro dispositivo."}
             </div>
           )}
           {page === "overview" && (
@@ -1507,7 +1535,13 @@ function Landing({
           </span>
         </div>
         <div>
-          <button className="landing-login" onClick={() => setAuthOpen(true)}>
+          <button
+            className="landing-login"
+            onClick={() => {
+              setRegister(false);
+              setAuthOpen(true);
+            }}
+          >
             Entrar
           </button>
           <button className="landing-nav-cta" onClick={onDemo}>
@@ -1533,7 +1567,10 @@ function Landing({
             </button>
             <button
               className="landing-secondary"
-              onClick={() => setAuthOpen(true)}
+              onClick={() => {
+                setRegister(true);
+                setAuthOpen(true);
+              }}
             >
               Criar minha conta <ArrowUpRight size={17} />
             </button>
@@ -1665,8 +1702,8 @@ function Landing({
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 required
-                minLength={6}
-                placeholder="Mínimo de 6 caracteres"
+                minLength={register ? 10 : undefined}
+                placeholder={register ? "Mínimo de 10 caracteres" : "Sua senha"}
               />
             </label>
             {error && (

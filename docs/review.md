@@ -46,3 +46,11 @@
 - Músculos aparecem como etiquetas textuais principais e auxiliares; o mapa corporal ficou em um bloco expansível. Isso evita depender apenas de cor ou de desenho para a informação.
 - A biblioteca agora tem 32 clipes wger verificados. Para cada um, o cartaz e dois quadros usados como fotos são extraídos do mesmo MP4, com crédito do autor e licença na seleção e no guia. Três candidatos foram rejeitados na revisão visual porque demonstravam variações diferentes do nome do catálogo.
 - Os outros 844 exercícios não receberam vídeo, pois não houve fonte gratuita revisada suficiente para uma correspondência de movimento, variante e aparelho. A busca permite filtrar os 32 com vídeo, sem esconder os demais do catálogo.
+
+## Cadastro e persistência — 30/09/2026
+
+- Projeto Supabase próprio em São Paulo, com `app_state` por `user_id`, RLS e permissões de tabela apenas para usuários autenticados. A chave usada no navegador é publicável; nenhuma chave privilegiada foi adicionada ao código.
+- Teste real com duas contas descartáveis: cadastro criou sessões, cada conta gravou e releu os próprios dados, uma não conseguiu ler nem sobrescrever a outra, visitante não teve leitura e a primeira conta manteve os dados após sair e entrar de novo.
+- Alterações pendentes de envio ficam temporariamente no navegador, associadas ao ID da conta, e são reenviadas na próxima abertura. O indicador na interface distingue salvando, salvo e falha. O app impede sair quando a gravação final falha.
+- Confirmação de e-mail ficou desligada por escolha de Luan para ativar cadastros nesta etapa. O SMTP padrão não atende usuários fora da equipe; confirmação e recuperação de senha exigem serviço de e-mail antes de uso em escala. Senhas novas exigem pelo menos dez caracteres.
+- Edição simultânea da mesma conta em dois dispositivos ainda não tem resolução de conflitos: a última gravação completa vence. Isso limita a garantia de persistência nesse cenário.

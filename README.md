@@ -2,7 +2,7 @@
 
 Site responsivo para organizar treinos, alimentação, cardio e evolução corporal. O visual usa a referência **Black Iris** (`#080813`) com superfícies translúcidas.
 
-**Demonstração pública:** [granado-fit.vercel.app](https://granado-fit.vercel.app/). Nesta etapa, os dados da demonstração ficam salvos somente no navegador usado.
+**Site público:** [granado-fit.vercel.app](https://granado-fit.vercel.app/). A demonstração salva dados somente no navegador. Contas pessoais salvam os dados no Supabase.
 
 ## Rodar no computador
 
@@ -15,13 +15,13 @@ npm run dev
 
 Abra `http://127.0.0.1:5173/`. O botão **Explorar demonstração** funciona sem conta e salva alterações apenas neste navegador. Os dados iniciais nessa demonstração são exemplos editáveis.
 
-## Ativar contas pessoais
+## Contas pessoais
 
-1. Crie um projeto no Supabase.
-2. Execute [`supabase/schema.sql`](supabase/schema.sql) no SQL Editor do projeto. A tabela usa Row Level Security para limitar cada pessoa aos próprios dados.
-3. Copie `.env.example` para `.env.local` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` com a URL e a chave pública do projeto. Nunca use a service role key no navegador.
-4. Configure o endereço do site em **Authentication → URL Configuration** e habilite o provedor de e-mail conforme a política desejada.
-5. Reinicie `npm run dev`.
+O projeto Supabase do GranadoFit já está conectado ao site público. A tabela `app_state` guarda um documento por conta e usa Row Level Security para leitura e gravação somente pelo próprio usuário. As alterações são enviadas à nuvem; se o navegador fechar antes de concluir o envio, uma cópia pendente naquele navegador é reenviada na próxima abertura da conta.
+
+Para rodar com contas no computador, copie `.env.example` para `.env.local` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` com a URL e a chave **publicável** do projeto. A chave de serviço nunca deve ir ao navegador. O arquivo `.env.local` não entra no Git.
+
+Por escolha para esta primeira versão, o cadastro não exige confirmação de e-mail. Antes de abrir o cadastro ao público em escala, configure SMTP próprio, reative a confirmação de e-mail e a recuperação de senha no Supabase. Sem SMTP, o serviço padrão só envia mensagens a membros autorizados da equipe.
 
 Contas novas começam sem medidas corporais, treinos ou refeições presumidos. Após o primeiro acesso, a pessoa preenche o perfil e personaliza os planos. O IMC é uma referência geral, não um diagnóstico. Dieta e treino não são prescritos automaticamente.
 
@@ -48,5 +48,5 @@ Revisão técnica e de segurança: [`docs/review.md`](docs/review.md).
 
 ## Limite atual
 
-A integração com uma conta real do Supabase depende das credenciais públicas e da execução do schema no projeto escolhido. Até lá, o fluxo pessoal pode ser experimentado no modo de demonstração local.
+As contas são separadas por usuário dentro de um único banco do projeto, não por bancos independentes. O fluxo de duas contas de teste confirmou cadastro, entrada novamente, persistência e bloqueio de leitura/gravação entre usuários. Edições simultâneas da mesma conta em dispositivos diferentes ainda usam a última gravação completa; evite editar em dois dispositivos ao mesmo tempo nesta fase.
 Ainda não há cobertura gratuita verificada para todos os 876 exercícios. O app mostra vídeo somente nas 32 correspondências conferidas e mantém fotos e instruções para os outros movimentos. Novos clipes devem ser adicionados ao mapeamento em `scripts/prepare-exercise-videos.mjs` após conferir nome, variante, aparelho, licença e fotogramas.

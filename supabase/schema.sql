@@ -4,6 +4,8 @@ create table if not exists public.app_state (
   updated_at timestamptz not null default now()
 );
 alter table public.app_state enable row level security;
+revoke all on public.app_state from anon;
+grant select, insert, update on public.app_state to authenticated;
 drop policy if exists "read own state" on public.app_state;
 drop policy if exists "insert own state" on public.app_state;
 drop policy if exists "update own state" on public.app_state;
