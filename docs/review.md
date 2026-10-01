@@ -30,3 +30,11 @@
 - Build TypeScript, 9 testes, consulta e edição no navegador, criação de exercício e alimento pessoal, alternância de dia e persistência após recarga verificados. Revisão visual do seletor em 1440 × 900 e 390 × 844.
 - A base USDA é de referência, predominantemente em inglês e não representa todas as preparações brasileiras. O mapa muscular é um esquema visual baseado na classificação da fonte. Valores nutricionais e músculos recrutados variam com preparo, técnica e indivíduo.
 - Não há projeto Supabase conectado: isolamento entre duas contas reais, RLS e sincronização remota continuam sem validação ponta a ponta. O estado de demonstração é local ao navegador.
+
+## Guia de execução e localização — 30/09/2026
+
+- Exercícios da ficha abrem um guia amplo, com 20 clipes MP4 H.264 locais de movimentos associados manualmente ao catálogo. Reprodução de Leg press confirmada no navegador com dimensões 960 × 540, duração 20 s e avanço do tempo de reprodução.
+- Todos os 876 registros recebem nome apresentado em PT-BR; 868 incluem instruções em português e 873 têm duas imagens locais. O guia sem clipe foi conferido com troca entre as duas imagens de agachamento.
+- A versão PT-BR CC0 é associada pelos IDs originais; termos mais usados no Brasil receberam revisão manual. Nomes antigos salvos são atualizados pelo ID, preservando a configuração do exercício.
+- Vídeos wger foram convertidos para MP4 e incluem crédito do autor, link da fonte e licença CC BY-SA 4.0 na interface. A ausência de clipe não é apresentada como vídeo.
+- Os passos traduzidos são informação geral da biblioteca. A execução real depende da técnica e condição da pessoa; o guia recomenda orientação profissional em caso de dúvida.

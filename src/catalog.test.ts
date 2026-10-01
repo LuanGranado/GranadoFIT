@@ -3,9 +3,11 @@ import { existsSync, readFileSync } from "node:fs";
 import {
   searchExercises,
   searchFoods,
+  localizeExerciseNames,
   type CatalogExercise,
   type CatalogFood,
 } from "./catalog";
+import { createInitialData, migrateData } from "./model";
 
 const exercises = JSON.parse(
   readFileSync("public/data/exercises.json", "utf8"),
@@ -27,6 +29,22 @@ describe("catálogos locais", () => {
         (item) => item.image && existsSync(`public${item.image}`),
       ).length,
     ).toBeGreaterThan(850);
+    expect(
+      exercises.filter(
+        (item) => item.image2 && existsSync(`public${item.image2}`),
+      ).length,
+    ).toBeGreaterThan(850);
+    expect(
+      exercises.filter((item) => item.instructions.length > 0).length,
+    ).toBeGreaterThan(850);
+    expect(exercises.every((item) => item.name !== item.originalName)).toBe(
+      true,
+    );
+    expect(
+      exercises.filter(
+        (item) => item.video && existsSync(`public${item.video.src}`),
+      ).length,
+    ).toBe(20);
     expect(
       searchExercises(
         exercises,
@@ -66,5 +84,15 @@ describe("catálogos locais", () => {
         (item) => item.name === "Arroz branco cozido",
       ),
     ).toBe(true);
+  });
+  it("atualiza os nomes de exercícios já salvos sem alterar sua ficha", () => {
+    const state = migrateData(createInitialData());
+    const original = state.workouts[0].exercises[0];
+    const next = localizeExerciseNames(state, exercises);
+    expect(next.workouts[0].exercises[0].name).toBe(
+      exercises.find((item) => item.id === original.catalogId)?.name,
+    );
+    expect(next.workouts[0].exercises[0].sets).toBe(original.sets);
+    expect(localizeExerciseNames(next, exercises)).toBe(next);
   });
 });

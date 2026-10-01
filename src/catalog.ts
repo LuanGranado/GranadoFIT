@@ -1,9 +1,10 @@
-import type { CustomExercise, CustomFood } from "./model";
+import type { AppData, CustomExercise, CustomFood } from "./model";
 
 export type CatalogExercise = {
   id: string;
   name: string;
   originalName: string;
+  instructions: string[];
   primaryMuscles: string[];
   secondaryMuscles: string[];
   equipment: string;
@@ -11,6 +12,13 @@ export type CatalogExercise = {
   level: string;
   image: string | null;
   image2: string | null;
+  video?: {
+    src: string;
+    author: string;
+    source: string;
+    license: string;
+    licenseUrl: string;
+  };
 };
 export type CatalogFood = {
   id: string;
@@ -105,8 +113,21 @@ export const equipmentNames: Record<string, string> = {
   bands: "Elástico",
   "e-z curl bar": "Barra W",
   medicine: "Bola medicinal",
+  "medicine ball": "Bola medicinal",
+  "exercise ball": "Bola suíça",
+  "foam roll": "Rolo de liberação",
   exercise: "Acessório",
   other: "Outro",
+};
+export const categoryNames: Record<string, string> = {
+  cardio: "Cardio",
+  "olympic weightlifting": "Levantamento olímpico",
+  plyometrics: "Pliometria",
+  powerlifting: "Levantamento de força",
+  strength: "Força",
+  stretching: "Alongamento",
+  strongman: "Força funcional",
+  custom: "Meu exercício",
 };
 export const equipmentFilters = [
   { id: "all", label: "Todos os equipamentos" },
@@ -148,6 +169,25 @@ export function normalizeSearch(value: string) {
     .toLowerCase()
     .trim();
 }
+export function localizeExerciseNames(
+  data: AppData,
+  catalog: CatalogExercise[],
+): AppData {
+  const names = new Map(catalog.map((item) => [item.id, item.name]));
+  let changed = false;
+  const workouts = data.workouts.map((workout) => ({
+    ...workout,
+    exercises: workout.exercises.map((exercise) => {
+      const name = exercise.catalogId
+        ? names.get(exercise.catalogId)
+        : undefined;
+      if (!name || name === exercise.name) return exercise;
+      changed = true;
+      return { ...exercise, name };
+    }),
+  }));
+  return changed ? { ...data, workouts } : data;
+}
 export function searchExercises(
   catalog: CatalogExercise[],
   custom: CustomExercise[],
@@ -161,6 +201,7 @@ export function searchExercises(
     ...custom.map((item) => ({
       ...item,
       originalName: item.name,
+      instructions: [],
       category: "custom",
       level: "custom",
       image: null,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Check, Dumbbell, Plus, Search, X } from "lucide-react";
 import {
+  categoryNames,
   equipmentFilters,
   equipmentNames,
   loadExercises,
@@ -70,6 +71,7 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
       item = {
         ...created,
         originalName: created.name,
+        instructions: [],
         category: "custom",
         level: "custom",
         image: null,
@@ -314,7 +316,7 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
                 )}
                 <p>
                   {equipmentNames[selected.equipment] || selected.equipment} ·{" "}
-                  {selected.category}
+                  {categoryNames[selected.category] || selected.category}
                 </p>
               </>
             ) : (

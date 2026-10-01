@@ -2531,3 +2531,255 @@ input:focus-visible {
   font-size: 11px;
   margin: 8px 0;
 }
+
+.exercise-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 9px 0;
+}
+.exercise-open:hover .exercise-main strong {
+  color: #c6b4ff;
+}
+.exercise-open-hint {
+  color: #a38aeb;
+  flex: none;
+}
+.execution-modal {
+  width: min(1100px, 100%);
+  max-height: min(94vh, 920px);
+  overflow: auto;
+  padding: 26px;
+  background: linear-gradient(140deg, #1e1b2ef8, #11101cfb);
+  box-shadow: 0 30px 100px #000a;
+}
+.execution-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+.execution-header h2 {
+  margin: 8px 0 3px;
+  font:
+    700 28px Outfit,
+    sans-serif;
+}
+.execution-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 24px;
+}
+.execution-media-col,
+.execution-info-col {
+  min-width: 0;
+}
+.execution-media-tabs {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 11px;
+}
+.execution-media-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #aaa5be;
+  background: #272438;
+  border: 1px solid #49435f;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font-size: 12px;
+}
+.execution-media-tabs button.selected {
+  color: white;
+  background: #6651ab;
+  border-color: #aa91ed;
+}
+.execution-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 350px;
+  overflow: hidden;
+  border-radius: 15px;
+  border: 1px solid #393548;
+  background: #0b0a12;
+}
+.execution-stage video,
+.execution-stage img {
+  display: block;
+  width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+}
+.execution-stage video {
+  aspect-ratio: 16/10;
+  background: #0b0a12;
+}
+.execution-stage img {
+  height: 470px;
+}
+.execution-photo-label {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  color: white;
+  background: #171322ca;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+}
+.execution-no-media {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: #a49abf;
+  text-align: center;
+  padding: 30px;
+  font-size: 13px;
+}
+.execution-frame-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  color: #a9a3b8;
+  font-size: 11px;
+}
+.execution-frame-controls button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: white;
+  background: #302b43;
+  border: 1px solid #534b6b;
+  border-radius: 9px;
+}
+.execution-media-note,
+.execution-credit {
+  font-size: 11px;
+  color: #a39db5;
+  line-height: 1.5;
+}
+.execution-credit a {
+  color: #bea7ff;
+}
+.execution-plan {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  background: #342949;
+  border: 1px solid #5d4877;
+  border-radius: 13px;
+}
+.execution-plan span {
+  color: #b79aff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.execution-plan strong {
+  font-size: 15px;
+}
+.execution-plan small {
+  color: #c0b7cf;
+  font-size: 11px;
+}
+.execution-muscle {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 10px;
+  background: #151321;
+  border: 1px solid #302b41;
+  border-radius: 13px;
+}
+.execution-muscle .muscle-figures {
+  height: 150px;
+}
+.execution-muscle p {
+  margin: 0 0 8px;
+  color: #aaa5b8;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.execution-muscle p strong {
+  color: #ded8ee;
+}
+.execution-steps h3 {
+  margin: 0 0 10px;
+  font:
+    650 17px Outfit,
+    sans-serif;
+}
+.execution-steps ol {
+  margin: 0;
+  padding-left: 20px;
+}
+.execution-steps li {
+  color: #c4bfd1;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.execution-steps > p {
+  color: #8f899f;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.execution-actions {
+  display: flex;
+  gap: 9px;
+  margin-top: 20px;
+}
+.execution-actions button {
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
+}
+@media (max-width: 850px) {
+  .execution-grid {
+    grid-template-columns: 1fr;
+  }
+  .execution-modal {
+    padding: 17px;
+  }
+  .execution-stage {
+    min-height: 250px;
+  }
+  .execution-stage img {
+    height: 320px;
+  }
+  .execution-muscle {
+    grid-template-columns: 130px 1fr;
+  }
+}
+@media (max-width: 500px) {
+  .execution-header h2 {
+    font-size: 22px;
+  }
+  .execution-stage img {
+    height: 250px;
+  }
+  .execution-actions {
+    flex-direction: column;
+  }
+  .exercise-open {
+    gap: 8px;
+  }
+  .exercise-open-hint {
+    display: none;
+  }
+}

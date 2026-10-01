@@ -45,8 +45,14 @@ import {
   weekDayIndex,
 } from "./model";
 import "./style.css";
-import { loadExercises, muscleNames, type CatalogExercise } from "./catalog";
+import {
+  loadExercises,
+  localizeExerciseNames,
+  muscleNames,
+  type CatalogExercise,
+} from "./catalog";
 import ExercisePicker from "./ExercisePicker";
+import ExerciseDetailModal from "./ExerciseDetailModal";
 import MealEditor from "./MealEditor";
 
 const ProgressChart = React.lazy(() => import("./ProgressChart"));
@@ -92,7 +98,15 @@ function App() {
   const [selectedDay, setSelectedDay] = useState(today);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editor, setEditor] = useState<Editor | null>(null);
+  const [viewingExercise, setViewingExercise] = useState<{
+    day: number;
+    id: string;
+  } | null>(null);
   const [exerciseCatalog, setExerciseCatalog] = useState<CatalogExercise[]>([]);
+  useEffect(() => {
+    if (exerciseCatalog.length)
+      setData((current) => localizeExerciseNames(current, exerciseCatalog));
+  }, [exerciseCatalog]);
   const [toast, setToast] = useState("");
   const [authNotice, setAuthNotice] = useState("");
   const [loading, setLoading] = useState(!!supabase);
@@ -763,47 +777,69 @@ function App() {
                             >
                               {item.done && <Check size={16} />}
                             </button>
-                            <span className="exercise-number">
-                              {String(index + 1).padStart(2, "0")}
-                            </span>
-                            {(() => {
-                              const entry = exerciseCatalog.find(
-                                (catalogItem) =>
-                                  catalogItem.id === item.catalogId,
-                              );
-                              return entry?.image ? (
-                                <img
-                                  className="workout-exercise-image"
-                                  src={entry.image}
-                                  alt={`Execução de ${item.name}`}
-                                  loading="lazy"
-                                />
-                              ) : null;
-                            })()}
-                            <div className="exercise-main">
-                              <strong>{item.name}</strong>
-                              <span>
-                                {item.sets} séries · {item.reps} repetições ·
-                                descanso {item.rest}
+                            <button
+                              className="exercise-open"
+                              aria-label={`Ver execução de ${item.name}`}
+                              onClick={() =>
+                                setViewingExercise({
+                                  day: selectedDay,
+                                  id: item.id,
+                                })
+                              }
+                            >
+                              <span className="exercise-number">
+                                {String(index + 1).padStart(2, "0")}
                               </span>
                               {(() => {
-                                const entry =
-                                  exerciseCatalog.find(
-                                    (catalogItem) =>
-                                      catalogItem.id === item.catalogId,
-                                  ) ||
-                                  data.customExercises.find(
-                                    (custom) => custom.id === item.customId,
-                                  );
-                                return entry ? (
-                                  <small className="exercise-muscles">
-                                    {entry.primaryMuscles
-                                      .map((part) => muscleNames[part] || part)
-                                      .join(", ")}
-                                  </small>
+                                const entry = exerciseCatalog.find(
+                                  (catalogItem) =>
+                                    catalogItem.id === item.catalogId,
+                                );
+                                return entry?.image ? (
+                                  <img
+                                    className="workout-exercise-image"
+                                    src={entry.image}
+                                    alt=""
+                                    loading="lazy"
+                                  />
                                 ) : null;
                               })()}
-                            </div>
+                              <span className="exercise-main">
+                                <strong>
+                                  {exerciseCatalog.find(
+                                    (catalogItem) =>
+                                      catalogItem.id === item.catalogId,
+                                  )?.name || item.name}
+                                </strong>
+                                <span>
+                                  {item.sets} séries · {item.reps} repetições ·
+                                  descanso {item.rest}
+                                </span>
+                                {(() => {
+                                  const entry =
+                                    exerciseCatalog.find(
+                                      (catalogItem) =>
+                                        catalogItem.id === item.catalogId,
+                                    ) ||
+                                    data.customExercises.find(
+                                      (custom) => custom.id === item.customId,
+                                    );
+                                  return entry ? (
+                                    <small className="exercise-muscles">
+                                      {entry.primaryMuscles
+                                        .map(
+                                          (part) => muscleNames[part] || part,
+                                        )
+                                        .join(", ")}
+                                    </small>
+                                  ) : null;
+                                })()}
+                              </span>
+                              <ChevronRight
+                                className="exercise-open-hint"
+                                size={17}
+                              />
+                            </button>
                             <button
                               className="icon-button muted"
                               aria-label={`Editar ${item.name}`}
@@ -1069,6 +1105,43 @@ function App() {
           </button>
         </div>
       )}
+      {viewingExercise &&
+        (() => {
+          const exercise = data.workouts[viewingExercise.day]?.exercises.find(
+            (item) => item.id === viewingExercise.id,
+          );
+          if (!exercise) return null;
+          return (
+            <ExerciseDetailModal
+              key={exercise.id}
+              exercise={exercise}
+              catalog={exerciseCatalog.find(
+                (item) => item.id === exercise.catalogId,
+              )}
+              custom={data.customExercises.find(
+                (item) => item.id === exercise.customId,
+              )}
+              onClose={() => setViewingExercise(null)}
+              onEdit={() => {
+                setEditor({
+                  kind: "exercise",
+                  day: viewingExercise.day,
+                  id: exercise.id,
+                });
+                setViewingExercise(null);
+              }}
+              onToggleDone={() =>
+                update((d) => {
+                  const target = d.workouts[viewingExercise.day].exercises.find(
+                    (item) => item.id === exercise.id,
+                  );
+                  if (target) target.done = !target.done;
+                  return d;
+                })
+              }
+            />
+          );
+        })()}
       {editor &&
         (editor.kind === "exercise-picker" ? (
           <ExercisePicker
