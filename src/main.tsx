@@ -17,6 +17,7 @@ import {
   HeartPulse,
   LogOut,
   Menu,
+  MoreHorizontal,
   Pause,
   Play,
   Plus,
@@ -53,6 +54,7 @@ import {
 } from "./catalog";
 import ExercisePicker from "./ExercisePicker";
 import ExerciseDetailModal from "./ExerciseDetailModal";
+import AccessibilityWidget from "./AccessibilityWidget";
 import MealEditor from "./MealEditor";
 
 const ProgressChart = React.lazy(() => import("./ProgressChart"));
@@ -76,6 +78,12 @@ const nav = [
   { id: "cardio", label: "Cardio & tempo", icon: Timer },
   { id: "progress", label: "Minha evolução", icon: TrendingDown },
   { id: "profile", label: "Meu perfil", icon: UserRound },
+] as const;
+const mobileNav = [
+  { id: "overview", label: "Início", icon: Activity },
+  { id: "workouts", label: "Treinos", icon: Dumbbell },
+  { id: "nutrition", label: "Dieta", icon: Utensils },
+  { id: "cardio", label: "Cardio", icon: Timer },
 ] as const;
 const today = weekDayIndex();
 const localKey = "granadofit-demo-v1";
@@ -1096,6 +1104,30 @@ function App() {
           )}
         </main>
       </div>
+      <nav className="mobile-bottom-nav" aria-label="Navegação inferior">
+        {mobileNav.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={page === item.id ? "active" : ""}
+            aria-current={page === item.id ? "page" : undefined}
+            onClick={() => navigate(item.id)}
+          >
+            <item.icon size={21} strokeWidth={1.9} />
+            <span>{item.label}</span>
+          </button>
+        ))}
+        <button
+          type="button"
+          className={page === "progress" || page === "profile" ? "active" : ""}
+          aria-label="Mais opções: evolução e perfil"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen(true)}
+        >
+          <MoreHorizontal size={22} strokeWidth={2} />
+          <span>Mais</span>
+        </button>
+      </nav>
       {toast && (
         <div className="toast" role="status">
           <Check size={17} />
@@ -2157,5 +2189,6 @@ function ProfilePage({
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
+    <AccessibilityWidget />
   </React.StrictMode>,
 );

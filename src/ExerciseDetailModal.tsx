@@ -8,8 +8,9 @@ import {
   Play,
   X,
 } from "lucide-react";
-import { equipmentNames, muscleNames, type CatalogExercise } from "./catalog";
+import { equipmentNames, type CatalogExercise } from "./catalog";
 import type { CustomExercise, Exercise } from "./model";
+import MuscleFocus from "./MuscleFocus";
 import MuscleMap from "./MuscleMap";
 
 type Props = {
@@ -120,7 +121,11 @@ export default function ExerciseDetailModal({
                 <>
                   <img
                     src={photos[frame]}
-                    alt={`${exercise.name}: ${frame === 0 ? "posição inicial" : "posição final"}`}
+                    alt={
+                      catalog?.video
+                        ? `${exercise.name}: quadro ${frame + 1} do vídeo`
+                        : `${exercise.name}: ${frame === 0 ? "posição inicial" : "posição final"}`
+                    }
                   />
                   <div className="execution-photo-label">
                     {photos.length > 1
@@ -147,7 +152,11 @@ export default function ExerciseDetailModal({
                 >
                   <ChevronLeft size={18} />
                 </button>
-                <span>Compare a posição inicial e a final</span>
+                <span>
+                  {catalog?.video
+                    ? "Quadros do mesmo vídeo de execução"
+                    : "Compare a posição inicial e a final"}
+                </span>
                 <button
                   onClick={() =>
                     setFrame((value) => (value + 1) % photos.length)
@@ -164,9 +173,9 @@ export default function ExerciseDetailModal({
                 continuam disponíveis.
               </p>
             )}
-            {mode === "video" && catalog?.video && !videoFailed && (
+            {catalog?.video && (
               <p className="execution-credit">
-                Vídeo: {catalog.video.author} ·{" "}
+                Vídeo e quadros: {catalog.video.author} ·{" "}
                 <a
                   href={catalog.video.source}
                   target="_blank"
@@ -194,29 +203,17 @@ export default function ExerciseDetailModal({
               <small>Descanso: {exercise.rest}</small>
             </div>
             <div className="execution-muscle">
-              <MuscleMap primary={primary} secondary={secondary} />
-              <div>
-                <p>
-                  <strong>Principal:</strong>{" "}
-                  {primary
-                    .map((part) => muscleNames[part] || part)
-                    .join(", ") || "Não informado"}
+              <MuscleFocus primary={primary} secondary={secondary} />
+              {equipment && (
+                <p className="execution-equipment">
+                  <strong>Equipamento:</strong>{" "}
+                  {equipmentNames[equipment] || equipment}
                 </p>
-                {secondary.length > 0 && (
-                  <p>
-                    <strong>Secundário:</strong>{" "}
-                    {secondary
-                      .map((part) => muscleNames[part] || part)
-                      .join(", ")}
-                  </p>
-                )}
-                {equipment && (
-                  <p>
-                    <strong>Equipamento:</strong>{" "}
-                    {equipmentNames[equipment] || equipment}
-                  </p>
-                )}
-              </div>
+              )}
+              <details className="muscle-map-details">
+                <summary>Ver mapa corporal</summary>
+                <MuscleMap primary={primary} secondary={secondary} />
+              </details>
             </div>
             {catalog?.instructions.length ? (
               <div className="execution-steps">

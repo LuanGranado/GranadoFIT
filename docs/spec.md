@@ -85,3 +85,15 @@ Digitar o nome de cada exercício ou alimento torna a ficha lenta de montar. Tam
 **Decisão revista:** a tradução parcial da etapa anterior foi substituída pela base PT-BR CC0 correspondente aos mesmos IDs do Free Exercise DB, com ajustes manuais para termos usuais no Brasil. O guia usa 20 clipes locais derivados de vídeos wger CC BY-SA 4.0, com autor e licença visíveis. Os demais exercícios usam duas imagens locais; nenhuma mídia é anunciada como vídeo quando é apenas uma sequência de fotos.
 
 **Verificação:** nomes antigos da ficha são atualizados pelo ID preservando séries e repetições; vídeo deve reproduzir em navegador; fotos devem alternar; instruções e atribuição devem aparecer no guia.
+
+## Ampliação — consistência visual e acessibilidade (30/09/2026)
+
+26. Os exercícios com vídeo usam quadros do mesmo clipe como imagens, de forma que pessoa, movimento e aparelho coincidam.
+27. Somente um vídeo de execução com movimento e variante conferidos pode aparecer como vídeo. O seletor permite filtrar os exercícios com vídeo; os demais conservam fotos e instruções sem promessa de clipe.
+28. Os grupos musculares são apresentados por nomes destacados e legíveis; o mapa corporal fica como complemento opcional.
+29. A pessoa pode ampliar a interface, aumentar o contraste e reduzir animações, com preferências salvas no navegador.
+30. No celular, a navegação usa barra inferior com cinco atalhos, baseada na terceira opção do vídeo de referência `nav.mp4`; a opção Mais abre evolução e perfil.
+
+**Decisão:** manter somente fontes gratuitas e vídeos com correspondência verificada. O wger fornece clipes para parte do catálogo; a cobertura é de 32 dos 876 exercícios nesta etapa. Quadros de vídeo não são rotulados como posição inicial/final, pois são fotogramas do clipe. O app não cria vídeos falsos a partir das fotos.
+
+**Verificação:** conferir aparelhos e variantes dos novos vídeos, autoria/licença, reprodução e correspondência entre foto e clipe; validar a barra, o guia e os controles de acessibilidade em celular, inclusive no aumento de 150%.

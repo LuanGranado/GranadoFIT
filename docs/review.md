@@ -38,3 +38,11 @@
 - A versão PT-BR CC0 é associada pelos IDs originais; termos mais usados no Brasil receberam revisão manual. Nomes antigos salvos são atualizados pelo ID, preservando a configuração do exercício.
 - Vídeos wger foram convertidos para MP4 e incluem crédito do autor, link da fonte e licença CC BY-SA 4.0 na interface. A ausência de clipe não é apresentada como vídeo.
 - Os passos traduzidos são informação geral da biblioteca. A execução real depende da técnica e condição da pessoa; o guia recomenda orientação profissional em caso de dúvida.
+
+## Navegação, leitura e mídia coerente — 30/09/2026
+
+- A terceira barra do vídeo de referência foi adaptada para cinco destinos no celular, com destaque vermelho na aba ativa. Evolução e perfil ficam em Mais; a navegação lateral continua disponível por esse menu.
+- O controle de acessibilidade inclui escala de 100%, 115%, 130% e 150%, alto contraste e redução de animações. No celular, o modo de 150% foi conferido sem rolagem horizontal nas telas principais. A interface ainda não passou por uma auditoria formal completa de WCAG 2.2.
+- Músculos aparecem como etiquetas textuais principais e auxiliares; o mapa corporal ficou em um bloco expansível. Isso evita depender apenas de cor ou de desenho para a informação.
+- A biblioteca agora tem 32 clipes wger verificados. Para cada um, o cartaz e dois quadros usados como fotos são extraídos do mesmo MP4, com crédito do autor e licença na seleção e no guia. Três candidatos foram rejeitados na revisão visual porque demonstravam variações diferentes do nome do catálogo.
+- Os outros 844 exercícios não receberam vídeo, pois não houve fonte gratuita revisada suficiente para uma correspondência de movimento, variante e aparelho. A busca permite filtrar os 32 com vídeo, sem esconder os demais do catálogo.

@@ -44,7 +44,21 @@ describe("catálogos locais", () => {
       exercises.filter(
         (item) => item.video && existsSync(`public${item.video.src}`),
       ).length,
-    ).toBe(20);
+    ).toBe(32);
+    expect(
+      exercises
+        .filter((item) => item.video)
+        .every(
+          (item) =>
+            item.image?.startsWith("/videos/posters/") &&
+            item.image2?.startsWith("/videos/posters/") &&
+            item.video?.src.split("/").pop()?.split(".")[0] ===
+              item.image
+                .split("/")
+                .pop()
+                ?.replace(/-1\.jpg$/, ""),
+        ),
+    ).toBe(true);
     expect(
       searchExercises(
         exercises,

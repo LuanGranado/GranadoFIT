@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Check, Dumbbell, Plus, Search, X } from "lucide-react";
+import { Check, Dumbbell, Play, Plus, Search, X } from "lucide-react";
 import {
   categoryNames,
   equipmentFilters,
@@ -11,6 +11,7 @@ import {
   type CatalogExercise,
 } from "./catalog";
 import type { AppData, CustomExercise, Exercise } from "./model";
+import MuscleFocus from "./MuscleFocus";
 import MuscleMap from "./MuscleMap";
 
 type Props = {
@@ -25,6 +26,7 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
   const [query, setQuery] = useState("");
   const [muscle, setMuscle] = useState("all");
   const [equipment, setEquipment] = useState("all");
+  const [videosOnly, setVideosOnly] = useState(false);
   const [selected, setSelected] = useState<CatalogExercise | null>(null);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -50,8 +52,11 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
     return () => window.removeEventListener("keydown", listener);
   }, [onClose]);
   const results = useMemo(
-    () => searchExercises(catalog, custom, query, muscle, equipment),
-    [catalog, custom, query, muscle, equipment],
+    () =>
+      searchExercises(catalog, custom, query, muscle, equipment).filter(
+        (item) => !videosOnly || !!item.video,
+      ),
+    [catalog, custom, query, muscle, equipment, videosOnly],
   );
   const shown = results.slice(0, 80);
   function add(event: FormEvent) {
@@ -159,6 +164,17 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
             ))}
           </select>
           <button
+            type="button"
+            className={`video-filter ${videosOnly ? "selected" : ""}`}
+            aria-pressed={videosOnly}
+            onClick={() => {
+              setVideosOnly((current) => !current);
+              setSelected(null);
+            }}
+          >
+            <Play size={15} /> Só com vídeo
+          </button>
+          <button
             className="outline-button"
             onClick={() => {
               setCreating(true);
@@ -215,6 +231,7 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
                   )}
                   <span>
                     <strong>{item.name}</strong>
+                    {item.video && <small className="video-badge">Vídeo</small>}
                     <small>
                       {item.primaryMuscles
                         .map((part) => muscleNames[part] || part)
@@ -280,12 +297,37 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
                     </select>
                   </label>
                 </div>
-                <MuscleMap primary={[customMuscle]} />
+                <MuscleFocus primary={[customMuscle]} />
               </>
             ) : selected ? (
               <>
                 <span className="mini-eyebrow">VISUALIZAÇÃO DO MOVIMENTO</span>
                 <h3>{selected.name}</h3>
+                <p className="media-availability">
+                  {selected.video
+                    ? "Vídeo conferido. As fotos são quadros do mesmo clipe."
+                    : "Fotos e instruções disponíveis; vídeo ainda não verificado."}
+                </p>
+                {selected.video && (
+                  <p className="media-attribution">
+                    Quadros: {selected.video.author} ·{" "}
+                    <a
+                      href={selected.video.source}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      fonte wger
+                    </a>{" "}
+                    ·{" "}
+                    <a
+                      href={selected.video.licenseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {selected.video.license}
+                    </a>
+                  </p>
+                )}
                 <div className="detail-visual">
                   {selected.image ? (
                     <img
@@ -295,25 +337,18 @@ export default function ExercisePicker({ custom, onSave, onClose }: Props) {
                   ) : (
                     <Dumbbell size={42} />
                   )}
+                </div>
+                <MuscleFocus
+                  primary={selected.primaryMuscles}
+                  secondary={selected.secondaryMuscles}
+                />
+                <details className="muscle-map-details">
+                  <summary>Ver mapa corporal</summary>
                   <MuscleMap
                     primary={selected.primaryMuscles}
                     secondary={selected.secondaryMuscles}
                   />
-                </div>
-                <p>
-                  <strong>Principal:</strong>{" "}
-                  {selected.primaryMuscles
-                    .map((part) => muscleNames[part] || part)
-                    .join(", ")}
-                </p>
-                {selected.secondaryMuscles.length > 0 && (
-                  <p>
-                    <strong>Secundário:</strong>{" "}
-                    {selected.secondaryMuscles
-                      .map((part) => muscleNames[part] || part)
-                      .join(", ")}
-                  </p>
-                )}
+                </details>
                 <p>
                   {equipmentNames[selected.equipment] || selected.equipment} ·{" "}
                   {categoryNames[selected.category] || selected.category}
