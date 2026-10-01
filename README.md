@@ -2,6 +2,8 @@
 
 Site responsivo para organizar treinos, alimentação, cardio e evolução corporal. O visual usa a referência **Black Iris** (`#080813`) com superfícies translúcidas.
 
+**Demonstração pública:** [granado-fit.vercel.app](https://granado-fit.vercel.app/). Nesta etapa, os dados da demonstração ficam salvos somente no navegador usado.
+
 ## Rodar no computador
 
 Requer Node.js. Na pasta do projeto:
